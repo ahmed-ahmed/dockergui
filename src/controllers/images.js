@@ -1,14 +1,12 @@
 'use strict';
 console.log('images controller started');
-exports.index = (request, response) => {
-    response.write('images/index');
-    // Send the response body 
-    response.end();
-}
-// function images(request, response) {
-    // var vm = this;
 
-    // this.index = () =>{
-        // response.write('images/index');
-    // }
-// }
+var docker = require('./../services/docker.js');
+
+exports.index = (request, response) => {
+    docker.getImages().then(images => {
+        var data = JSON.stringify(images);
+        response.write(data);
+        response.end();
+    })
+}
