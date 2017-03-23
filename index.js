@@ -1,23 +1,27 @@
 var http = require('http');
+var server = require('./src/server.js');
 
-http.createServer((request, response) => {
+exports.init =  (request, response) => {
     if(request.url.indexOf('.ico') > -1) {
         response.end();
         return;
     }
-    let urlComponents = request.url.split('/');
 
-    let controller = require(`./src/controllers/${urlComponents[1]}.js`);
-    if (controller) {
-        let action = urlComponents[2];
-        if(action) {
-            controller[action](request,response);
-        } else if (controller.index){
-            controller.index(request,response);
-        } else {
-            //todo: return 404
-        }
-    }
-}).listen(9090);
+    let {controller,action,params} = server.getRequestValues(request);
+
+    require(server.getControllerFullPath(controller))[action](request,response).then(data=> {
+        data = JSON.stringify(data);
+        response.write(data);
+        response.end();
+     });
+};
+
+exports.startServe = ()=> {
+    http.createServer((request, response) => {
+        exports.init(request,response); 
+    }).listen(9090);
+};
+
+exports.startServe();
 
 console.log('Server is running on port:9090')
